@@ -11,8 +11,9 @@ def load_model(MODEL_NAME, MODEL_PATH):
     #warming up
     print('warming up...')
     test_input='how are you?'
-    _ = reloaded(tf.constant(test_input)) #warmup
-    del _
+    test_output = reloaded(tf.constant(test_input)) #warmup
+    print("testing...ignore this:",test_output.numpy().decode())
+    del test_output
 
     print(f'Model {MODEL_NAME} loaded!')
     return reloaded
