@@ -22,6 +22,8 @@ python3 main.py
 
 ## NGROK hosting
 
+(Refer: https://ngrok.com/docs/getting-started/)
+
 1. run the server `python3 main.py`
 
 2. install ngrok agent
