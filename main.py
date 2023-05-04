@@ -1,9 +1,15 @@
 from flask import Flask, render_template, request
 import nmt_model.model as NMT
+import os
 
 app = Flask(__name__)
 MODEL_NAME='TRANSFORMER_MINI_KOK_EN'
-MODEL_PATH='/media/sajalmandrekar/BlackHole/NMT models/TRANS_MINI_KOK_EN_08_04/exported_translator'
+
+if 'MODEL_PATH' not in os.environ:
+    MODEL_PATH='/media/sajalmandrekar/BlackHole/NMT models/TRANS_MINI_KOK_EN_08_04/exported_translator'
+else:
+    MODEL_PATH=os.environ['MODEL_PATH']
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
