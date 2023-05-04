@@ -13,13 +13,14 @@ else:
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    processed_text = None
     if request.method == 'POST':
         text = request.form['text']
         # do something with the text here, for example:
         processed_text = NMT.translate_text(model,text)
+        print("Translated_text:",processed_text)
 
-        return render_template('result.html', text=processed_text)
-    return render_template('index.html')
+    return render_template('index.html', processed_text=processed_text, input_text=request.form.get('text', ''))
 
 if __name__ == '__main__':
     model = NMT.load_model(MODEL_NAME,MODEL_PATH)
