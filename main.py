@@ -1,28 +1,56 @@
-from flask import Flask, render_template, request
-import nmt_model.model as NMT
+from flask import Flask, render_template, request,jsonify
+from dotenv import load_dotenv
 import os
 
+config_file=os.path.abspath('config.env')
+load_dotenv(config_file,override=True)
+
+#load the tensorflow model
+import nmt_model.model as NMT
+
 app = Flask(__name__)
-MODEL_NAME='TRANSFORMER_MINI_KOK_EN'
 
-if 'MODEL_PATH' not in os.environ:
-    MODEL_PATH='/media/sajalmandrekar/BlackHole/NMT models/TRANS_MINI_KOK_EN_08_04/exported_translator'
-else:
-    MODEL_PATH=os.environ['MODEL_PATH']
-
+MODEL_EN_KOK_PATH = os.environ['MODEL_EN_KOK_PATH']
+MODEL_KOK_EN_PATH = os.environ['MODEL_KOK_EN_PATH']
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    processed_text = None
-    if request.method == 'POST':
-        text = request.form['text']
-        # do something with the text here, for example:
-        processed_text = NMT.translate_text(model,text)
-        print("Translated_text:",processed_text)
+    output = {
+                "Message":"TranslateKar Welcomes you!",
+                'Request Type':'POST',
+                "Endpoints":{
+                            'English to Konkani':'/translate/en-kok/',
+                            'Konkani to English':'/translate/kok-en/',
+                        },
+              }
+    return jsonify(output)
 
-    return render_template('index.html', processed_text=processed_text, input_text=request.form.get('text', ''))
+@app.route('/translate/en-kok/', methods=['POST'])
+def translate_EK():
+    input_data = request.json['input']
+    translated_sentence = model_ek(input_data).numpy().decode()
+    output = {
+                'source':input_data,
+                'target': translated_sentence,
+                'target_lang':'Konkani',
+            }
+    print("JSON response:\n",output)
+    return jsonify(output)
+
+@app.route('/translate/kok-en/', methods=['POST'])
+def translate_KE():
+    input_data = request.json['input']
+    translated_sentence = model_ke(input_data).numpy().decode()
+    output = {
+                'source':input_data,
+                'target': translated_sentence,
+                'target_lang':'English',
+            }
+    print("JSON response:\n",output)
+    return jsonify(output)
 
 if __name__ == '__main__':
-    model = NMT.load_model(MODEL_NAME,MODEL_PATH)
-    app.run(debug=True)
+    model_ek = NMT.load_model(MODEL_EN_KOK_PATH)
+    model_ke = NMT.load_model(MODEL_KOK_EN_PATH,model_type='KE')
+    app.run(host='0.0.0.0', port=5000,debug=True,use_reloader=False)
 
