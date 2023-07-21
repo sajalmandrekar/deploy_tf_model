@@ -13,6 +13,10 @@ app = Flask(__name__)
 MODEL_EN_KOK_PATH = os.environ['MODEL_EN_KOK_PATH']
 MODEL_KOK_EN_PATH = os.environ['MODEL_KOK_EN_PATH']
 
+#loading the models from tensorflow SavedModel format
+model_ek = NMT.load_model(MODEL_EN_KOK_PATH)
+model_ke = NMT.load_model(MODEL_KOK_EN_PATH,model_type='KE')
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     output = {
@@ -22,6 +26,14 @@ def index():
                             'English to Konkani':'/translate/en-kok/',
                             'Konkani to English':'/translate/kok-en/',
                         },
+                "Request params":
+                    {'input':'(str) string to be translated'},
+                "Response params":
+                    {   
+                        'source':'(str) input string passed as request',
+                        'target':'(str) translated string',
+                        'target_lang':'(str) langauge of translated string'
+                    },
               }
     return jsonify(output)
 
@@ -50,7 +62,5 @@ def translate_KE():
     return jsonify(output)
 
 if __name__ == '__main__':
-    model_ek = NMT.load_model(MODEL_EN_KOK_PATH)
-    model_ke = NMT.load_model(MODEL_KOK_EN_PATH,model_type='KE')
-    app.run(host='0.0.0.0', port=5000,debug=True,use_reloader=False)
+    app.run(host='0.0.0.0', port=8000,debug=False,use_reloader=False)
 
