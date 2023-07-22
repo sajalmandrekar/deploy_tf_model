@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request,jsonify
+from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 
@@ -9,6 +10,7 @@ load_dotenv(config_file,override=True)
 import nmt_model.model as NMT
 
 app = Flask(__name__)
+CORS(app)
 
 MODEL_EN_KOK_PATH = os.environ['MODEL_EN_KOK_PATH']
 MODEL_KOK_EN_PATH = os.environ['MODEL_KOK_EN_PATH']
@@ -16,6 +18,14 @@ MODEL_KOK_EN_PATH = os.environ['MODEL_KOK_EN_PATH']
 #loading the models from tensorflow SavedModel format
 model_ek = NMT.load_model(MODEL_EN_KOK_PATH)
 model_ke = NMT.load_model(MODEL_KOK_EN_PATH,model_type='KE')
+
+
+# @app.before_request
+# def handle_preflight():
+#     if request.method == "OPTIONS":
+#         res = Response()
+#         res.headers['X-Content-Type-Options'] = '*'
+#         return res
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -43,7 +53,7 @@ def translate_EK():
     translated_sentence = model_ek(input_data).numpy().decode()
     output = {
                 'source':input_data,
-                'target': translated_sentence,
+                'target': 'translated_sentence',
                 'target_lang':'Konkani',
             }
     print("JSON response:\n",output)
@@ -55,12 +65,12 @@ def translate_KE():
     translated_sentence = model_ke(input_data).numpy().decode()
     output = {
                 'source':input_data,
-                'target': translated_sentence,
+                'target': 'translated_sentence',
                 'target_lang':'English',
             }
     print("JSON response:\n",output)
     return jsonify(output)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000,debug=False,use_reloader=False)
+    app.run(host='0.0.0.0', port=8000,debug=True,use_reloader=False)
 
