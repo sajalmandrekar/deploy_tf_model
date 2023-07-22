@@ -19,6 +19,26 @@ MODEL_KOK_EN_PATH = os.environ['MODEL_KOK_EN_PATH']
 model_ek = NMT.load_model(MODEL_EN_KOK_PATH)
 model_ke = NMT.load_model(MODEL_KOK_EN_PATH,model_type='KE')
 
+def translate(lang:str,input_text:str):
+
+    translated_sentence = 'init'
+
+    if lang.lower() in ['en','eng','english']:
+        target_lang = 'Konkani'
+        translated_sentence = model_ek(input_text).numpy().decode()
+    elif lang.lower() in ['kok','gom','konkani']: 
+        target_lang = 'English'
+        translated_sentence = model_ke(input_text).numpy().decode()
+    else:
+        return "Invalid input language!"
+
+    output = {
+                'source':input_text,
+                'target': translated_sentence,
+                'target_lang':target_lang,
+            }
+    print("JSON response:\n",output)
+    return jsonify(output)
 
 # @app.before_request
 # def handle_preflight():
@@ -31,13 +51,20 @@ model_ke = NMT.load_model(MODEL_KOK_EN_PATH,model_type='KE')
 def index():
     output = {
                 "Message":"TranslateKar Welcomes you!",
-                'Request Type':'POST',
                 "Endpoints":{
-                            'English to Konkani':'/translate/en-kok/',
-                            'Konkani to English':'/translate/kok-en/',
+                            'Two-way Translations: (GET,POST)':{
+                                'endpoint':'/translate',
+                                'params':['lang','input'],
+                            },
+                            'English to Konkani (POST)':{
+                                'endpoints':'/translate/en-kok',
+                                'params':['input'],
+                            },
+                            'Konkani to English (POST)':{
+                                'endpoints':'/translate/kok-en',
+                                'params':['input'],
+                            },
                         },
-                "Request params":
-                    {'input':'(str) string to be translated'},
                 "Response params":
                     {   
                         'source':'(str) input string passed as request',
@@ -47,30 +74,28 @@ def index():
               }
     return jsonify(output)
 
+@app.route('/translate/', methods=['GET','POST'])
+def handle_request():
+    if request.method == 'GET':
+        lang = request.args.get('lang')
+        input_text = request.args.get('input')
+
+    elif request.method == 'POST':
+        lang = request.json['lang']  
+        input_text = request.json['input']
+    else:
+        return "Invalid request method!"
+    return translate(lang,input_text) 
+
 @app.route('/translate/en-kok/', methods=['POST'])
 def translate_EK():
-    input_data = request.json['input']
-    translated_sentence = model_ek(input_data).numpy().decode()
-    output = {
-                'source':input_data,
-                'target': 'translated_sentence',
-                'target_lang':'Konkani',
-            }
-    print("JSON response:\n",output)
-    return jsonify(output)
+    input_text = request.json['input']
+    return translate("en",input_text)
 
 @app.route('/translate/kok-en/', methods=['POST'])
 def translate_KE():
-    input_data = request.json['input']
-    translated_sentence = model_ke(input_data).numpy().decode()
-    output = {
-                'source':input_data,
-                'target': 'translated_sentence',
-                'target_lang':'English',
-            }
-    print("JSON response:\n",output)
-    return jsonify(output)
+    input_text = request.json['input']
+    return translate("kok",input_text)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000,debug=True,use_reloader=False)
-

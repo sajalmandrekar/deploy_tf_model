@@ -12,7 +12,7 @@ python3 -m pip install requirements.txt
 python3 main.py
 ```
 
-* open url on browser http://localhost:5000
+* open url on browser http://localhost:8000
 
 ## Directory Structure:
 
@@ -42,4 +42,4 @@ python3 main.py
 
 3. Connect agent to ngrok account `ngrok config add-authtoken TOKEN`
 
-4. Start ngrok `ngrok http 5000`
+4. Start ngrok `ngrok http 8000`
